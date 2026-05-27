@@ -10,7 +10,7 @@ std::list<component> read_input(int argc, char **argv)
 	std::list<component> lista_componenti;
 	
 	if (argc < 2) {
-		std::cerr << "ERRORE! È necessario inserire il nome del file!" << std::endl;
+		std::cerr << "ERRORE! È necessario inserire il nome del file!" << std::endl;  // errore
 		return lista_componenti;
 	}
 	
