@@ -44,3 +44,16 @@ std::list<component> read_input(int argc, char **argv)
 	}
 	return lista_componenti;
 }
+
+unidirected_graph<int> graph_builder(std::list<component>& lista_componenti)
+{
+	unidirected_graph<int> grafo_circuito;
+	for (const auto& c : lista_componenti) 
+	{
+		unidirected_edge<int> arco(c.nodo1, c.nodo2, c.tipo, c.valore);
+		grafo_circuito.add_edge(arco);
+	}
+	return grafo_circuito;
+}
+
+		

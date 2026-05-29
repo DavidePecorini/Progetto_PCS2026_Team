@@ -1,4 +1,4 @@
-#include "read_input.hpp"
+#include "create_graph.hpp"
 #include "struct_class.hpp"
 #include <list>
 #include <iostream>
@@ -11,5 +11,10 @@ int main(int argc, char **argv)
 	{
 		std::cout << c.tipo << c.id << " " << c.valore << " " << c.nodo1 << " "  << c.nodo2 << std::endl;
 	}
-	return 0;
-}
+		unidirected_graph<int> grafo_circuito = graph_builder(lista_componenti);
+		for (const unidirected_edge<int>& arco : grafo_circuito.all_edges())
+		{
+			std::cout << arco;
+		}
+		return 0;
+	}
