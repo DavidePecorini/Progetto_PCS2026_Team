@@ -149,7 +149,7 @@ std::pair<std::map<T, int>, std::map<T, std::optional<T>>> djikstra(const unidir
 		// scorro i vicini di nodo_corrente e recupero gli archi che li collegano con relativo peso
 		for (const T& nodo_vicino : G.neighbours(nodo_corrente)) {
 			// Creo l'arco tra nodo_vicino e nodo_corrente
-			unidirected_edge<T> arco_corrente(nodo_corrente, nodo_vicino);
+			unidirected_edge<T> arco_corrente(nodo_corrente, nodo_vicino,'H'); //ho aggiunto un tipo di default perchè abbiamo cambiato i parametri previsti dalla classe edge
 			// Trovo la posizione di arco_corrente nel mio set di archi del grafo con un iteratore
 			auto it = G.all_edges().find(arco_corrente);
 			// lo dereferenzio e estraggo dall'arco nel set il peso 
