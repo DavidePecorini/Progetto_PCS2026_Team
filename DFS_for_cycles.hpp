@@ -33,7 +33,6 @@ bool finding_path(const unidirected_graph<T>& tree, const T& u, const T& v, std:
 	return false;
 }
 
-		
 
 
 template<typename T>
