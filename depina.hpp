@@ -90,10 +90,28 @@ std::vector<bool> trova_ciclominimo(const unidirected_graph<T>& g, const vector<
                 passo = predecessori.at(passo).value() //il metodo .at() mi permette di recuperare un predecessore senza, nel caso in cui passo non sia una chiave, modificare la mappa
             }
             percorso_migliore.push_back(start_node);
-            std::reverse(best_path_nodes.begin(), best_path_nodes.end()); //devo ribaltarlo perchè in questo momento ho un cammino che va dal mio nodo finale a quello iniziale
+            std::reverse(percorso_migliore.begin(),percorso_migliore.end()); //devo ribaltarlo perchè in questo momento ho un cammino che va dal mio nodo finale a quello iniziale
         }
     }
+    //ora devo cercare di convertire quello che è questo vettore di tuple (nodo,bool) in un ciclo di g
+    int m = g.all_edges().size();
     std::vector<bool> ciclo(m, false); //inizializzo il vettore che sarà il mio risultato
+    if (!percorso_migliore.empty()) {
+        for(size_t i = 0; i < percorso_migliore.size() - 1; i++){ //recupero solo il nodo senza segno
+            T nodo_u = percorso_migliore[i].first;
+            T nodo_v = percorso_migliore[i+1].first; 
+            int indice_arco = -1;
+            for(const auto& arco : g.all_edges()){     //cerco l'arco nel grafo iniziale 
+                if((arco.from() == nodo_u && arco.to() == nodo_v) || 
+                   (arco.from() == nodo_v && arco.to() == nodo_u)){
+                    indice_arco = g.edge_number(arco);
+                    break;
+                }
+            }
+            if(indice_arco != -1){
+                ciclo[indice_arco] = !ciclo[indice_arco]; //questa operazione implementa lo XOR e il fatto che se passo due volte su un arco devo poi toglierlo dal ciclo
+            }
+        }
 }
 
 //adesso creo l'intera funzione che mi restituirà i cicli minimi: al suo interno c'è dunque una serie di operazioni di inizializzazione e l'algoritmo di De Pina vero e proprio
