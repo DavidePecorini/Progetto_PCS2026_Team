@@ -1,55 +1,10 @@
 #pragma once
-#include "unidirected_graph.hpp"
-#include "LifoFifo.hpp"
+#include "struct_class.hpp"
 #include <set>
 #include <queue>
 #include <limits>
 #include <optional>
 
-
-template<typename T> 
-
-unidirected_graph<T> graph_visit(const unidirected_graph<T>& G, const T& nodo_sorgente, auto& contenitore)
-{
-	unidirected_graph<T> grafo_ris;
-	
-	// Usiamo un set al posto di un vettore di booleani poichè non abbiamo garanzie sul tipo di T e 
-	// quindi non è detto che l'accesso nodi_visitati[i] = true sia lecito
-	std::set<T> nodi_visitati;
-	
-	// Controllo che il nodo fornito sia presente nel grafo altrimenti restituisco grafo vuoto
-	auto nodi = G.all_nodes();
-	if (!nodi.count(nodo_sorgente)) {
-		return grafo_ris;
-	}
-	// Aggiungo il nodo sorgente al contenitore e anche al set dei nodi già visitati
-	contenitore.put(nodo_sorgente);
-	nodi_visitati.insert(nodo_sorgente);
-	
-	while(!contenitore.empty()) {
-		T nodo = contenitore.get();
-		
-		// Il metodo neighbours restituisce direttamente i nodi vicini di nodo
-		for (const T& nodo_vicino : G.neighbours(nodo)) {
-			
-			// Controllo che il nodo vicino non sia già stato visitato
-			if (!nodi_visitati.count(nodo_vicino)) {
-				
-				// Aggiungo il nodo al set dei nodi già visitati
-				nodi_visitati.insert(nodo_vicino);
-				
-				// Aggiungo l'arco all'albero risultante dalla visita (e quindi aggiorno tutte
-				// le strutture associate
-				grafo_ris.add_edge(unidirected_edge<T> (nodo, nodo_vicino));
-				
-				// Aggiungo il nodo vicino nel contenitore
-				// In base al contenitore il nodo verrà messo all'inizio o alla fine
-				contenitore.put(nodo_vicino);
-			}
-		}
-	}
-	return grafo_ris;
-}
 
 template<typename T> 
 
@@ -189,10 +144,10 @@ unidirected_graph<T> albero_predecessori(const std::map<T, std::optional<T>>& pr
 }
 
 template <typename T>
-std::optional<unidirected_graph<T>> grafo_cammino_minimo(const std::map<T, std::optional<T>>& predecessori, const T& sorgente, const T& destinazione)
+std::optional<unidirected_graph<T>> grafo_cammino_minimo(const std::map<T, std::optional<T>>& predecessori, const std::map<T, int> distanze, const T& sorgente, const T& destinazione)
 {
 	// Se la destinazione non è raggiungibile restituisco nullopt
-	if (distanze[destinazione] == std::numeric_limits<int>::max()) {
+	if (distanze.at(destinazione) == std::numeric_limits<int>::max()) {
 	return std::nullopt;
 	}
 
@@ -201,7 +156,7 @@ std::optional<unidirected_graph<T>> grafo_cammino_minimo(const std::map<T, std::
 
 	// Risalgo i predecessori da destinazione a sorgente aggiungendo gli archi direttamente
 	while (nodo_corrente != sorgente) {
-		T pred = predecessori[nodo_corrente].value();
+		T pred = predecessori.at(nodo_corrente).value();
 		grafo_ris.add_edge(unidirected_edge<T>(pred, nodo_corrente));
 		nodo_corrente = pred;
 	}
