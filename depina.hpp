@@ -95,6 +95,82 @@ std::vector<bool> trova_ciclominimo(const unidirected_graph<T>& g, const std::ve
 		}
 	}
 	return C_best;
+//costruisco la funzione che cerca il ciclo minimo e che userò dopo nel De Pina
+template <typename T> 
+std::vector<bool> trova_ciclominimo(const unidirected_graph<T>& g, const vector<bool>& v){
+    //procedo con il lifting: creo il grafo sdoppiato
+    unidirected_graph<std::pair<T, bool>> G_primo;
+    for(const auto& arco : g.all_edges()){
+        T u = arco.from();
+        T v = arco.to();
+        int indice = g.edge_number(arco);
+       
+       
+        bool is_active; //devo verificare se per il vettore v l'arco è attivo perchè se lo è nella costruzione di G_primo creo gli archi incrociati
+        if (indice != -1) {
+            is_active = v[indice]; // Se l'indice è valido, prendi il valore dal vettore
+        } 
+        else {
+            is_active = false;    // Se l'indice è -1 (errore), metti falso di default. il -1 è il risultato "di gestione d'errore" in caso io non trovi l'arco
+        }
+        //dai due nodi di un arco in g creo i quattro nodi che saranno in G_primo
+        std::pair<T, bool> u_piu  = {u, true};
+        std::pair<T, bool> u_meno = {u, false};
+        std::pair<T, bool> v_piu  = {v, true};
+        std::pair<T, bool> v_meno = {v, false};
+        //prima di creare gli archi in G_primo mi recupero il tipo ed il peso dell'arco di g
+        char t = arco.tipo();
+        double p = arco.peso();
+        if (is_active){
+            G_primo.add_edge(u_piu,v_meno,t,p);
+            G_primo.add_edge(u_meno,v_piu,t,p);
+        }
+        else{
+            G_primo.add_edge(u_piu,v_piu,t,p);
+            G_primo.add_edge(u_meno,v_meno,t,p);
+        }
+    }
+    //qua si chiude la costruzione del grafo G_primo, non resta che cercare al suo interno i cicli minimi con il djikstra
+    int peso_minimo_ciclo = std::numeric_limits<int>::max(); //lo inizializzo con il massimo intero che posso inserire
+    std::vector<std::pair<T, bool>> percorso_migliore;
+    
+    for(const auto& nodo : g.all_nodes()) {
+        std::pair<T, bool> start_node = {nodo, true};
+        std::pair<T, bool> target_node = {nodo, false};
+        auto [distanze, predecessori] = djikstra(G_primo, start_node); //dato che djikstra restituisce un pacchetto con due elementi questo comando me li spacchetta e salva in distanze e predecessori
+        if (distanze.count(target_node) && distanze.at(target_node) < peso_minimo_ciclo) {
+            peso_minimo_ciclo = distanze.at(target_node); 
+            //questo if mi fa capire se sono arrivato al nodo target con meno distanza, .count() cerca la chiave
+            //ora devo creare il cammino migliore annullando il precedente e ricostruendo questo qua
+            percorso_migliore.clear();
+            std::pair<T,bool> passo = target_node;
+            while(passo!=start_node){
+                percorso_migliore.push_back(passo);
+                passo = predecessori.at(passo).value() //il metodo .at() mi permette di recuperare un predecessore senza, nel caso in cui passo non sia una chiave, modificare la mappa
+            }
+            percorso_migliore.push_back(start_node);
+            std::reverse(percorso_migliore.begin(),percorso_migliore.end()); //devo ribaltarlo perchè in questo momento ho un cammino che va dal mio nodo finale a quello iniziale
+        }
+    }
+    //ora devo cercare di convertire quello che è questo vettore di tuple (nodo,bool) in un ciclo di g
+    int m = g.all_edges().size();
+    std::vector<bool> ciclo(m, false); //inizializzo il vettore che sarà il mio risultato
+    if (!percorso_migliore.empty()) {
+        for(size_t i = 0; i < percorso_migliore.size() - 1; i++){ //recupero solo il nodo senza segno
+            T nodo_u = percorso_migliore[i].first;
+            T nodo_v = percorso_migliore[i+1].first; 
+            int indice_arco = -1;
+            for(const auto& arco : g.all_edges()){     //cerco l'arco nel grafo iniziale 
+                if((arco.from() == nodo_u && arco.to() == nodo_v) || 
+                   (arco.from() == nodo_v && arco.to() == nodo_u)){
+                    indice_arco = g.edge_number(arco);
+                    break;
+                }
+            }
+            if(indice_arco != -1){
+                ciclo[indice_arco] = !ciclo[indice_arco]; //questa operazione implementa lo XOR e il fatto che se passo due volte su un arco devo poi toglierlo dal ciclo
+            }
+        }
 }
 			
 			
@@ -110,6 +186,67 @@ std::vector<std::vector<bool>> de_pina(const unidirected_graph<T>& g){//si noti 
 
 	unidirected_graph<T> tree = recursive_DFS(g, starting_node);
 	
+template<typename T>
+std::vector<bool> trova_ciclominimo(const unidirected_graph<T>& g, const vector<bool>& S)
+{
+	// Creo il grafo sdoppiato 
+	
+	unidirected_graph<T> G_primo;
+	
+	int n = g.all_nodes().size();
+	int m = g.all_edges().size();
+	
+	for (const auto& arco : g.all_edges()) 
+	{
+		T u = arco.from();
+		T v = arco.to();
+		
+		// Controllo che l'arco sia attivo, valuto il valore di S_i per l'indice dell'arco in g
+		// Al posto dell'etichettatura +/- al fine di raddoppiare la dimensione del grafo, uso una mappa che crea i doppioni come 
+		// il nodo originale sommato alla dimensione di g
+		if (S[g.edge_number(arco)) 
+		{
+			G_primo.add_edge((u,v+n));
+			G_primo.add_edge((u+n,v));
+		}
+		else
+		{
+			G_primo.add_edge((u,v));
+			G_primo.add_edge((u+n,v+n));
+		}
+	}
+	std::vector<bool> C_best(m,true);
+	for (const auto& nodo : g.all_nodes()) 
+	{
+		auto [distanze, predecessori] = djikstra(G_primo, nodo);
+		unidirected_graph<T> grafo_cammino_minimo(predecessori, nodo, nodo+n);
+		
+		std::vector<bool> C;
+		for (const auto& arco : grafo_cammino_minimo.all_edges()) 
+		{
+			T u = (arco.from())%n;
+			T v = (arco.to())%n;
+			size_t indice = g.edge_number((u,v));
+			C[indice]++;
+		}
+		if (std::count(C.begin(), C.end(), true) < std::count(C_best.begin(), C_best.end(), true)) 
+		{
+			C_best = C;
+		}
+	}
+	return C_best;
+}
+			
+			
+			
+		
+
+//adesso creo l'intera funzione che mi restituirà i cicli minimi: al suo interno c'è dunque una serie di operazioni di inizializzazione e l'algoritmo di De Pina vero e proprio
+template<typename T>
+std::vector<std::vector<bool>> cicli_minimi(const unidirected_graph<T>& g){//si noti come l'output sarà un vettore contenenti tutti quelli che nel PDF vengono chiamati vettori d'incidenza
+    //fase di inizializzazione: devo associare ad ogni arco di g un indice che mi dia informazioni sull'ordine, in questo caso lessicografico. Mi tornano utili le funzioni edge_number e l'operatore < definito nella classe degli archi
+    T starting_node = *g.all_nodes().begin();
+    unidirected_graph<T> tree = recursive_DFS(g, starting_node);    
 	unidirected_graph<T> cotree = g - tree;
 	
 	size_t m = g.all_edges().size();  //questo m è il numero di archi del grafo e sarà la dimensione di tutti i vettori booleani che creeremo
@@ -138,3 +275,6 @@ std::vector<std::vector<bool>> de_pina(const unidirected_graph<T>& g){//si noti 
 	}
 	return cicli_minimi;
 }
+
+template<typename T> 
+std::vect

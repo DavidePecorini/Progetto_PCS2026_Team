@@ -145,6 +145,7 @@ unidirected_graph<T> albero_predecessori(const std::map<T, std::optional<T>>& pr
 
 template <typename T>
 std::optional<unidirected_graph<T>> grafo_cammino_minimo(const std::map<T, std::optional<T>>& predecessori, const std::map<T, int> distanze, const T& sorgente, const T& destinazione)
+std::optional<unidirected_graph<T>> grafo_cammino_minimo(const std::map<T, std::optional<T>>& predecessori, const T& sorgente, const T& destinazione)
 {
 	// Se la destinazione non è raggiungibile restituisco nullopt
 	if (distanze[destinazione] == std::numeric_limits<int>::max()) {
