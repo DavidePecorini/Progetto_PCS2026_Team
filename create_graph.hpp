@@ -5,13 +5,14 @@
 #include <list>
 #include <string>
 
-std::list<component> read_input(int argc, char **argv) 
+std::pair<std::list<component>, int> read_input(int argc, char **argv) 
 {
 	std::list<component> lista_componenti;
+	int n_resistori = 0;
 	
 	if (argc < 2) {
 		std::cerr << "ERRORE! È necessario inserire il nome del file!" << std::endl;  // errore
-		return lista_componenti;
+		return {lista_componenti, 0};
 	}
 	
 	std::string filename = argv[1];
@@ -19,7 +20,7 @@ std::list<component> read_input(int argc, char **argv)
 	if (!ifs.is_open())
 	{
 		std::cerr << "ERRORE! Impossibile aprire il file: " << filename << std::endl;
-		return lista_componenti;
+		return {lista_componenti, 0};
 	}
 	
 	char t;
@@ -41,8 +42,13 @@ std::list<component> read_input(int argc, char **argv)
 		c.nodo2 = n2;
 		
 		lista_componenti.push_back(c);
+		
+		if (t == 'R')
+		{
+			n_resistori++;
+		}
 	}
-	return lista_componenti;
+	return {lista_componenti, n_resistori};
 }
 
 unidirected_graph<int> graph_builder(std::list<component>& lista_componenti)
@@ -55,5 +61,4 @@ unidirected_graph<int> graph_builder(std::list<component>& lista_componenti)
 	}
 	return grafo_circuito;
 }
-
 		
