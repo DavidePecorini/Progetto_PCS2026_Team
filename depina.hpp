@@ -60,14 +60,16 @@ std::vector<bool> trova_ciclominimo(const unidirected_graph<T>& g, const std::ve
 		// il nodo originale sommato alla dimensione di g
 		if (S[g.edge_number(arco)]) 
 		{
-			// Si noti che nel nostro modello vale u = u+ e v+n = v-
-			G_primo.add_edge((u,v+n));
-			G_primo.add_edge((u+n,v));
+			// Si noti che nel nostro modello vale u = u+ e v+n+1 = v-
+			// La scelta di n+1 al posto di n è dovuta al fatto di dover evitare la comparsa di un nodo 0 quando viene fatta l'operazione %n
+			// Notiamo che questa soluzione funziona solo in caso di nodi numerati consecutivamente
+			G_primo.add_edge(unidirected_edge<T>(u,v+n+1));
+			G_primo.add_edge(unidirected_edge<T>(u+n+1,v));
 		}
 		else
 		{
-			G_primo.add_edge((u,v));
-			G_primo.add_edge((u+n,v+n));
+			G_primo.add_edge(unidirected_edge<T>(u,v));
+			G_primo.add_edge(unidirected_edge<T>(u+n+1,v+n+1));
 		}
 	}
 	// Creo il vettore di booleani che restituisce true in posizione edge_number(arco) se l'arco è parte del cammino minimo
@@ -76,18 +78,22 @@ std::vector<bool> trova_ciclominimo(const unidirected_graph<T>& g, const std::ve
 	for (const auto& nodo : g.all_nodes()) 
 	{
 		auto [distanze, predecessori] = djikstra(G_primo, nodo);
-		unidirected_graph<T> grafo_cammino_minimo(predecessori, nodo, nodo+n);
+		auto g_opt = grafo_cammino_minimo(predecessori, distanze, nodo, nodo+n+1);
 		
-		std::vector<bool> C;
+		if (!g_opt.has_value()) continue;
+		
+		unidirected_graph<T> g_minimo = g_opt.value();
+		
+		std::vector<bool> C(m,false);
 		T u;
 		T v;
-		for (const auto& arco : grafo_cammino_minimo.all_edges()) 
+		for (const auto& arco : g_minimo.all_edges()) 
 		{
-			u = (arco.from())%n;
-			v = (arco.to())%n;
+			u = (arco.from())%(n+1);
+			v = (arco.to())%(n+1);
 			
-			size_t indice = g.edge_number((u,v));
-			C[indice]++;
+			size_t indice = g.edge_number(unidirected_edge<T>(u,v));
+			C[indice] = !C[indice];
 		}
 		if (std::count(C.begin(), C.end(), true) < std::count(C_best.begin(), C_best.end(), true)) 
 		{
@@ -108,7 +114,7 @@ std::vector<std::vector<bool>> de_pina(const unidirected_graph<T>& g){//si noti 
 	// Scelgo un nodo 
 	T starting_node = *g.all_nodes().begin();
 
-	unidirected_graph<T> tree = recursive_DFS(g, starting_node);
+	unidirected_graph<T> tree = recursive_dfs(g, starting_node);
 	
 	unidirected_graph<T> cotree = g - tree;
 	

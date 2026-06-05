@@ -6,7 +6,7 @@
 
 int main(int argc, char **argv) 
 {
-	std::pair<std::list<component>, int>  (lista_componenti, nr) = read_input(argc, argv);
+	auto  [lista_componenti, nr] = read_input(argc, argv);
 	
 	for (component c : lista_componenti) 
 	{
@@ -21,10 +21,11 @@ int main(int argc, char **argv)
 	for (const auto& maglia : maglie)
 	{
 		std::cout << "(";
-		for (size_t k = 0, k < maglia.size()-1, k++)
+		for (size_t k = 0; k < maglia.size()-1; k++)
 		{
 			std::cout << maglia[k] << ", ";
 		}
 		std::cout << maglia[maglia.size()-1] << ")" << std::endl;
+	}
 	return 0;
 	}

@@ -32,8 +32,9 @@ class unidirected_edge
 		{}
 		
 		// Aggiungo ad ogni arco l'attributo peso (settato di default a valore 1.0 se non specificato)
-		unidirected_edge(const T& n1, const T& n2, char t, double p = 1.0)
-			: _peso(p), _tipo(t)
+		// e l'attributo tipo (settato di default a 'R')
+		unidirected_edge(const T& n1, const T& n2, char t = 'R', double p = 1.0)
+			: _tipo(t), _peso(p)
 		{
 			if (t == 'V' && n1 > n2) {
 				_peso = - _peso;

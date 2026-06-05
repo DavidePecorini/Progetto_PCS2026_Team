@@ -147,7 +147,7 @@ template <typename T>
 std::optional<unidirected_graph<T>> grafo_cammino_minimo(const std::map<T, std::optional<T>>& predecessori, const std::map<T, int> distanze, const T& sorgente, const T& destinazione)
 {
 	// Se la destinazione non è raggiungibile restituisco nullopt
-	if (distanze[destinazione] == std::numeric_limits<int>::max()) {
+	if (distanze.at(destinazione) == std::numeric_limits<int>::max()) {
 	return std::nullopt;
 	}
 
@@ -156,7 +156,7 @@ std::optional<unidirected_graph<T>> grafo_cammino_minimo(const std::map<T, std::
 
 	// Risalgo i predecessori da destinazione a sorgente aggiungendo gli archi direttamente
 	while (nodo_corrente != sorgente) {
-		T pred = predecessori[nodo_corrente].value();
+		T pred = predecessori.at(nodo_corrente).value();
 		grafo_ris.add_edge(unidirected_edge<T>(pred, nodo_corrente));
 		nodo_corrente = pred;
 	}
