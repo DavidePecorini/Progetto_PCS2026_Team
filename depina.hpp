@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <vector>
 #include <map>
+
 //definisco il prodotto scalare booleano
 int prodotto_scalare(const std::vector<bool>& vec1, const std::vector<bool>& vec2){
     //faccio un test sulla dimensione
@@ -18,7 +19,7 @@ int prodotto_scalare(const std::vector<bool>& vec1, const std::vector<bool>& vec
     if(somma%2 == 0){
         return 0;
     }
-    else{
+    else {
         return 1;
     }
 }
@@ -47,6 +48,8 @@ std::vector<bool> trova_ciclominimo(const unidirected_graph<T>& g, const vector<
         T u = arco.from();
         T v = arco.to();
         int indice = g.edge_number(arco);
+       
+       
         bool is_active; //devo verificare se per il vettore v l'arco è attivo perchè se lo è nella costruzione di G_primo creo gli archi incrociati
         if (indice != -1) {
             is_active = v[indice]; // Se l'indice è valido, prendi il valore dal vettore
@@ -114,12 +117,67 @@ std::vector<bool> trova_ciclominimo(const unidirected_graph<T>& g, const vector<
         }
 }
 
+template<typename T>
+std::vector<bool> trova_ciclominimo(const unidirected_graph<T>& g, const vector<bool>& S)
+{
+	// Creo il grafo sdoppiato 
+	
+	unidirected_graph<T> G_primo;
+	
+	int n = g.all_nodes().size();
+	int m = g.all_edges().size();
+	
+	for (const auto& arco : g.all_edges()) 
+	{
+		T u = arco.from();
+		T v = arco.to();
+		
+		// Controllo che l'arco sia attivo, valuto il valore di S_i per l'indice dell'arco in g
+		// Al posto dell'etichettatura +/- al fine di raddoppiare la dimensione del grafo, uso una mappa che crea i doppioni come 
+		// il nodo originale sommato alla dimensione di g
+		if (S[g.edge_number(arco)) 
+		{
+			G_primo.add_edge((u,v+n));
+			G_primo.add_edge((u+n,v));
+		}
+		else
+		{
+			G_primo.add_edge((u,v));
+			G_primo.add_edge((u+n,v+n));
+		}
+	}
+	std::vector<bool> C_best(m,true);
+	for (const auto& nodo : g.all_nodes()) 
+	{
+		auto [distanze, predecessori] = djikstra(G_primo, nodo);
+		unidirected_graph<T> grafo_cammino_minimo(predecessori, nodo, nodo+n);
+		
+		std::vector<bool> C;
+		for (const auto& arco : grafo_cammino_minimo.all_edges()) 
+		{
+			T u = (arco.from())%n;
+			T v = (arco.to())%n;
+			size_t indice = g.edge_number((u,v));
+			C[indice]++;
+		}
+		if (std::count(C.begin(), C.end(), true) < std::count(C_best.begin(), C_best.end(), true)) 
+		{
+			C_best = C;
+		}
+	}
+	return C_best;
+}
+			
+			
+			
+		
+
 //adesso creo l'intera funzione che mi restituirà i cicli minimi: al suo interno c'è dunque una serie di operazioni di inizializzazione e l'algoritmo di De Pina vero e proprio
 template<typename T>
 std::vector<std::vector<bool>> cicli_minimi(const unidirected_graph<T>& g){//si noti come l'output sarà un vettore contenenti tutti quelli che nel PDF vengono chiamati vettori d'incidenza
     //fase di inizializzazione: devo associare ad ogni arco di g un indice che mi dia informazioni sull'ordine, in questo caso lessicografico. Mi tornano utili le funzioni edge_number e l'operatore < definito nella classe degli archi
     T starting_node = *g.all_nodes().begin();
-    unidirected_graph<T> tree = recursive_DFS_support(g, starting_node);    
+    unidirected_graph<T> tree = recursive_DFS(g, starting_node);    
 	unidirected_graph<T> cotree = g - tree;
     size_t m = g.all_edges().size();  //questo m è il numero di archi del grafo e sarà la dimensione di tutti i vettori booleani che creeremo
     std::vector<std::vector<bool>> S;  //creo la matrice dove inserirò i vettori Si, S avrà quindi dimensione k X m di elementi booleani
@@ -144,3 +202,6 @@ std::vector<std::vector<bool>> cicli_minimi(const unidirected_graph<T>& g){//si 
     }
     return cicli_minimi;
 }
+
+template<typename T> 
+std::vect
